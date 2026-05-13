@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Meet the Officers — HOSA</title>
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+
+  <!-- ============ NAVIGATION ============ -->
+  <nav class="navbar">
+    <a href="index.html" class="navbar-logo">
+      <span class="logo-dot"></span>
+      HOSA
+    </a>
+    <button class="nav-toggle" onclick="document.getElementById('navLinks').classList.toggle('open')">☰</button>
+    <ul class="navbar-links" id="navLinks">
+      <li><a href="index.html">Home</a></li>
+      <li><a href="officers.html" class="active">Meet the Officers</a></li>
+      <!-- UPDATE the # below with your Google Doc URL when ready -->
+      <li><a href="https://docs.google.com/document/d/1Z3RjfrCTvKkm9gfMbZfXhzirBfntvaIcb-1--sNDnkk/edit?usp=sharing" target="_blank" rel="noopener">Resources</a></li>
+      <li><a href="points.html">Points</a></li>
+    </ul>
+  </nav>
+
+  <main>
+    <div class="container">
+      <h1 class="page-title">Meet the Officers</h1>
+      <p class="page-subtitle">The students leading HOSA this year.</p>
+
+      <!-- The officer cards will appear inside this div automatically. -->
+      <div class="officers-grid" id="officersGrid"></div>
+    </div>
+  </main>
+
+  <footer class="footer">
+    © <span id="year"></span> HOSA Chapter · Made with <span class="footer-heart">♥</span> for future health professionals
+  </footer>
+
+  <script>
+    document.getElementById('year').textContent = new Date().getFullYear();
+
+    /* ===============================================================
+       👇  EDIT YOUR OFFICERS HERE  👇
+       ===============================================================
+       Each officer is a block of 4 lines between { and }.
+       To change someone, just edit the text between the quotes.
+
+       FIELDS:
+         name  — The officer's name shown on the card
+         role  — Their position (President, VP, etc.)
+         photo — Path to their picture. Examples:
+                   "images/jane.jpg"   → uses that image
+                   ""                  → shows their initials instead
+         bio   — A short sentence about them
+
+       TO ADD AN OFFICER: copy one whole { ... }, block (including
+       the comma at the end) and paste it inside the [ ].
+
+       TO REMOVE AN OFFICER: delete the whole { ... }, block.
+
+       TO ADD A PHOTO:
+         1. Put the photo in the "images" folder (next to this file).
+         2. Set photo to something like "images/their-name.jpg".
+       =============================================================== */
+
+    const OFFICERS = [
+      {
+        name: "Aishwarya Sridhar",
+        role: "President",
+        photo: "",
+        bio: "Answer"
+      },
+      {
+        name: "Kaiden Kim",
+        role: "Secretary",
+        photo: "",
+        bio: "Answer"
+      },
+      {
+        name: "Yoshita G.",
+        role: "President-Elect",
+        photo: "",
+        bio: "Answer"
+      },
+      {
+        name: "Lucia Leal",
+        role: "Vice President of Membership",
+        photo: "",
+        bio: "Answer"
+      },
+      {
+        name: "Noah Sheftel",
+        role: "Vice President of Community Relations",
+        photo: "",
+        bio: "Answer"
+      },
+      {
+        name: "Aditi Jadhav",
+        role: "Treasurer",
+        photo: "",
+        bio: "Ansewer"
+      },
+      {
+        name: "Abby Cheng",
+        role: "Historian",
+        photo: "",
+        bio: "Answer"
+      },
+      {
+        name: "Ivanka Kathuria",
+        role: "Parliamentarian",
+        photo: "",
+        bio: "Answer"
+      },
+      {
+        name: "Seojun Choi",
+        role: "Chair of Engagement",
+        photo: "",
+        bio: "Answer"
+      },
+    ];
+
+    /* ===============================================================
+       Nothing below this line needs to be edited.
+       =============================================================== */
+
+    function getInitials(name) {
+      return name
+        .split(/\s+/)
+        .filter(Boolean)
+        .map(w => w[0])
+        .slice(0, 2)
+        .join('')
+        .toUpperCase();
+    }
+
+    function escapeHtml(s) {
+      return String(s).replace(/[&<>"']/g, c =>
+        ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])
+      );
+    }
+
+    function renderOfficers() {
+      const grid = document.getElementById('officersGrid');
+
+      if (!OFFICERS.length) {
+        grid.innerHTML = '<p style="grid-column: 1/-1; text-align:center; color: var(--navy-soft);">No officers added yet.</p>';
+        return;
+      }
+
+      grid.innerHTML = OFFICERS.map(o => {
+        const hasPhoto = o.photo && o.photo.trim();
+        const photoStyle = hasPhoto
+          ? `style="background-image: url('${escapeHtml(o.photo)}')"`
+          : '';
+        const photoInner = hasPhoto ? '' : escapeHtml(getInitials(o.name));
+
+        return `
+          <div class="officer-card">
+            <div class="officer-photo" ${photoStyle}>${photoInner}</div>
+            <div class="officer-info">
+              <span class="officer-role">${escapeHtml(o.role)}</span>
+              <div class="officer-name">${escapeHtml(o.name)}</div>
+              <p class="officer-bio">${escapeHtml(o.bio)}</p>
+            </div>
+          </div>
+        `;
+      }).join('');
+    }
+
+    renderOfficers();
+  </script>
+</body>
+</html>

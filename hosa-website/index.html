@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>HOSA — Future Health Professionals</title>
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+
+  <!-- ============ NAVIGATION ============ -->
+  <nav class="navbar">
+    <a href="index.html" class="navbar-logo">
+      <span class="logo-dot"></span>
+      HOSA
+    </a>
+    <button class="nav-toggle" onclick="document.getElementById('navLinks').classList.toggle('open')">☰</button>
+    <ul class="navbar-links" id="navLinks">
+      <li><a href="index.html" class="active">Home</a></li>
+      <li><a href="officers.html">Meet the Officers</a></li>
+      <!--
+        ===========================================================
+        UPDATE THIS LINK when your Google Doc is ready.
+        Just replace the # with your Google Doc URL.
+        Example: href="https://docs.google.com/document/d/..."
+        ===========================================================
+      -->
+      <li><a href="https://docs.google.com/document/d/1Z3RjfrCTvKkm9gfMbZfXhzirBfntvaIcb-1--sNDnkk/edit?usp=sharing" target="_blank" rel="noopener">Resources</a></li>
+      <li><a href="points.html">Points</a></li>
+    </ul>
+  </nav>
+
+  <main>
+
+    <!-- ============ HERO ============ -->
+    <section class="hero">
+      <h1>Future Health <em>Professionals</em> of America</h1>
+      <p>Welcome to HOSA — where students passionate about healthcare grow, compete, and connect. Explore what our chapter is up to this year.</p>
+    </section>
+
+    <!-- ============ SLIDESHOW ============
+         To add your own images:
+         1. Drop your 7 images into an "images" folder next to this file.
+         2. Name them slide1.jpg, slide2.jpg, ... slide7.jpg
+            (or update the paths in the data-src attributes below).
+         3. The slideshow will automatically use them.
+         ============================================ -->
+    <section class="slideshow">
+      <div class="slideshow-frame" id="slideshowFrame">
+        <div class="slide active" data-src="images/slide1.jpg">
+          <div class="slide-placeholder">Photo 1<span>Replace with images/slide1.jpg</span></div>
+        </div>
+        <div class="slide" data-src="images/slide2.jpg">
+          <div class="slide-placeholder">Photo 2<span>Replace with images/slide2.jpg</span></div>
+        </div>
+        <div class="slide" data-src="images/slide3.jpg">
+          <div class="slide-placeholder">Photo 3<span>Replace with images/slide3.jpg</span></div>
+        </div>
+        <div class="slide" data-src="images/slide4.jpg">
+          <div class="slide-placeholder">Photo 4<span>Replace with images/slide4.jpg</span></div>
+        </div>
+        <div class="slide" data-src="images/slide5.jpg">
+          <div class="slide-placeholder">Photo 5<span>Replace with images/slide5.jpg</span></div>
+        </div>
+        <div class="slide" data-src="images/slide6.jpg">
+          <div class="slide-placeholder">Photo 6<span>Replace with images/slide6.jpg</span></div>
+        </div>
+        <div class="slide" data-src="images/slide7.jpg">
+          <div class="slide-placeholder">Photo 7<span>Replace with images/slide7.jpg</span></div>
+        </div>
+
+        <button class="slide-nav prev" onclick="changeSlide(-1)" aria-label="Previous slide">‹</button>
+        <button class="slide-nav next" onclick="changeSlide(1)" aria-label="Next slide">›</button>
+      </div>
+
+      <div class="slide-dots" id="slideDots">
+        <button class="slide-dot active" onclick="goToSlide(0)" aria-label="Slide 1"></button>
+        <button class="slide-dot" onclick="goToSlide(1)" aria-label="Slide 2"></button>
+        <button class="slide-dot" onclick="goToSlide(2)" aria-label="Slide 3"></button>
+        <button class="slide-dot" onclick="goToSlide(3)" aria-label="Slide 4"></button>
+        <button class="slide-dot" onclick="goToSlide(4)" aria-label="Slide 5"></button>
+        <button class="slide-dot" onclick="goToSlide(5)" aria-label="Slide 6"></button>
+        <button class="slide-dot" onclick="goToSlide(6)" aria-label="Slide 7"></button>
+      </div>
+    </section>
+
+    <!-- ============ INFO CARDS ============ -->
+    <section class="info-strip">
+      <div class="info-card">
+        <span class="info-card-tag">Officers</span>
+        <h3>Meet the Team</h3>
+        <p>Get to know the students leading our chapter this year. <a href="officers.html" style="color: var(--maroon); font-weight: 600; text-decoration: underline;">View officers →</a></p>
+      </div>
+      <div class="info-card">
+        <span class="info-card-tag">Resources</span>
+        <h3>Member Docs</h3>
+        <p>Forms, schedules, study guides, and competition info — all in one place. <a href="#" style="color: var(--maroon); font-weight: 600; text-decoration: underline;">Open docs →</a></p>
+      </div>
+      <div class="info-card">
+        <span class="info-card-tag">Points</span>
+        <h3>Track Your Points</h3>
+        <p>Check how many participation points you've earned this year. <a href="points.html" style="color: var(--maroon); font-weight: 600; text-decoration: underline;">Look up points →</a></p>
+      </div>
+    </section>
+
+  </main>
+
+  <footer class="footer">
+    © <span id="year"></span> HOSA Chapter · Made with <span class="footer-heart">♥</span> for future health professionals
+  </footer>
+
+  <script>
+    // ============ SLIDESHOW LOGIC ============
+    let currentSlide = 0;
+    const slides = document.querySelectorAll('.slide');
+    const dots = document.querySelectorAll('.slide-dot');
+    const totalSlides = slides.length;
+    let autoplayTimer;
+
+    // Try to load real images; fall back to placeholder if missing
+    slides.forEach(slide => {
+      const src = slide.dataset.src;
+      if (!src) return;
+      const testImg = new Image();
+      testImg.onload = () => {
+        slide.style.backgroundImage = `url('${src}')`;
+        const placeholder = slide.querySelector('.slide-placeholder');
+        if (placeholder) placeholder.style.display = 'none';
+      };
+      testImg.onerror = () => { /* keep placeholder visible */ };
+      testImg.src = src;
+    });
+
+    function showSlide(index) {
+      slides.forEach((s, i) => s.classList.toggle('active', i === index));
+      dots.forEach((d, i) => d.classList.toggle('active', i === index));
+      currentSlide = index;
+    }
+
+    function changeSlide(direction) {
+      const next = (currentSlide + direction + totalSlides) % totalSlides;
+      showSlide(next);
+      restartAutoplay();
+    }
+
+    function goToSlide(index) {
+      showSlide(index);
+      restartAutoplay();
+    }
+
+    function restartAutoplay() {
+      clearInterval(autoplayTimer);
+      autoplayTimer = setInterval(() => changeSlide(1), 5000);
+    }
+
+    restartAutoplay();
+
+    // Year in footer
+    document.getElementById('year').textContent = new Date().getFullYear();
+  </script>
+</body>
+</html>

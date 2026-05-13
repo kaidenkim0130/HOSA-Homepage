@@ -1,0 +1,204 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Points — HOSA</title>
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+
+  <!-- ============ NAVIGATION ============ -->
+  <nav class="navbar">
+    <a href="index.html" class="navbar-logo">
+      <span class="logo-dot"></span>
+      HOSA
+    </a>
+    <button class="nav-toggle" onclick="document.getElementById('navLinks').classList.toggle('open')">☰</button>
+    <ul class="navbar-links" id="navLinks">
+      <li><a href="index.html">Home</a></li>
+      <li><a href="officers.html">Meet the Officers</a></li>
+      <!-- UPDATE the # below with your Google Doc URL when ready -->
+      <li><a href="https://docs.google.com/document/d/1Z3RjfrCTvKkm9gfMbZfXhzirBfntvaIcb-1--sNDnkk/edit?usp=sharing" target="_blank" rel="noopener">Resources</a></li>
+      <li><a href="points.html" class="active">Points</a></li>
+    </ul>
+  </nav>
+
+  <main class="points-page">
+
+    <!-- ============ SEARCH BAR ============ -->
+    <div class="search-bar">
+      <input
+        type="text"
+        id="searchInput"
+        class="search-input"
+        placeholder="Enter your name"
+        autocomplete="off"
+      />
+      <button class="search-button" onclick="searchPoints()">Search</button>
+    </div>
+
+    <!-- ============ RESULTS AREA ============ -->
+    <div id="resultsArea">
+      <div class="status-message">Type your name above and press Search to see your points.</div>
+    </div>
+
+  </main>
+
+  <footer class="footer">
+    © <span id="year"></span> HOSA Chapter · Made with <span class="footer-heart">♥</span> for future health professionals
+  </footer>
+
+  <script>
+    document.getElementById('year').textContent = new Date().getFullYear();
+
+    /* =============================================================
+       GOOGLE SHEETS SETUP — READ THIS!
+       =============================================================
+       This page reads data live from a Google Sheet.
+       To connect your sheet:
+
+       1. Open your Google Sheet. Make sure it has columns in this order
+          on the first row:
+             A: Name    |   B: Sem 1 Points   |   C: Sem 2 Points
+          (The total is calculated automatically — you don't need a Total column.)
+
+       2. In Google Sheets, go to:
+             File → Share → Publish to web
+
+       3. In the dialog:
+             - Under "Link", choose your sheet/tab.
+             - Change "Web page" to "Comma-separated values (.csv)".
+             - Click "Publish", then "OK" if asked.
+             - COPY the URL it gives you.
+
+       4. Paste that URL between the quotes below (replace the placeholder):
+       ============================================================= */
+
+    const SHEET_CSV_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vRhmLgx8APWs_rAC8WMYTenIB_WcOtWD4iKz4CSFo-PI4cjGt39I1maU9fPbMqWONb0HKkz0b87RQ4h/pub?gid=0&single=true&output=csv";
+
+    /* =============================================================
+       You can edit the Google Sheet at any time. As long as the sheet
+       stays published, the website will always show the latest data.
+       (Google may take a minute or two to refresh after you make edits.)
+       ============================================================= */
+
+    const resultsArea = document.getElementById('resultsArea');
+    const searchInput = document.getElementById('searchInput');
+
+    // Allow pressing Enter to search
+    searchInput.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter') searchPoints();
+    });
+
+    // Simple CSV parser (handles quoted fields with commas inside)
+    function parseCSV(text) {
+      const rows = [];
+      let row = [], field = '', inQuotes = false;
+      for (let i = 0; i < text.length; i++) {
+        const c = text[i];
+        if (inQuotes) {
+          if (c === '"' && text[i + 1] === '"') { field += '"'; i++; }
+          else if (c === '"') { inQuotes = false; }
+          else { field += c; }
+        } else {
+          if (c === '"') { inQuotes = true; }
+          else if (c === ',') { row.push(field); field = ''; }
+          else if (c === '\n') { row.push(field); rows.push(row); row = []; field = ''; }
+          else if (c === '\r') { /* skip */ }
+          else { field += c; }
+        }
+      }
+      if (field.length || row.length) { row.push(field); rows.push(row); }
+      return rows;
+    }
+
+    async function searchPoints() {
+      const query = searchInput.value.trim().toLowerCase();
+
+      if (!query) {
+        showStatus("Please type a name to search.", true);
+        return;
+      }
+
+      if (SHEET_CSV_URL === "PASTE_YOUR_PUBLISHED_CSV_URL_HERE") {
+        showStatus("This page isn't connected to a Google Sheet yet. Open points.html and follow the setup instructions in the script section.", true);
+        return;
+      }
+
+      showStatus("Searching...");
+
+      try {
+        const response = await fetch(SHEET_CSV_URL);
+        if (!response.ok) throw new Error("Couldn't reach the sheet.");
+        const csv = await response.text();
+        const rows = parseCSV(csv).filter(r => r.length && r[0].trim());
+
+        if (rows.length < 2) {
+          showStatus("The sheet looks empty. Add some rows and try again.", true);
+          return;
+        }
+
+        // Skip header row, find matching rows by name (substring, case-insensitive)
+        const matches = rows.slice(1).filter(row => {
+          const name = (row[0] || '').toLowerCase();
+          return name.includes(query);
+        });
+
+        if (matches.length === 0) {
+          showStatus(`No results found for "${searchInput.value.trim()}". Check the spelling and try again.`, true);
+          return;
+        }
+
+        renderResults(matches);
+      } catch (err) {
+        console.error(err);
+        showStatus("Something went wrong loading the points. Please try again in a moment.", true);
+      }
+    }
+
+    function showStatus(msg, isError = false) {
+      resultsArea.innerHTML = `<div class="status-message${isError ? ' error' : ''}">${msg}</div>`;
+    }
+
+    function renderResults(rows) {
+      const tableRows = rows.map(row => {
+        const name = (row[0] || '').trim();
+        const sem1Raw = (row[1] || '').trim();
+        const sem2Raw = (row[2] || '').trim();
+        const sem1 = parseFloat(sem1Raw) || 0;
+        const sem2 = parseFloat(sem2Raw) || 0;
+        const total = sem1 + sem2;
+        return `
+          <tr>
+            <td>${escapeHtml(name)}</td>
+            <td>${sem1Raw === '' ? '0' : sem1}</td>
+            <td>${sem2Raw === '' ? '0' : sem2}</td>
+            <td>${total}</td>
+          </tr>
+        `;
+      }).join('');
+
+      resultsArea.innerHTML = `
+        <table class="results-table">
+          <thead>
+            <tr>
+              <th>Name</th>
+              <th>Sem 1 Points</th>
+              <th>Sem 2 Points</th>
+              <th>Total Points</th>
+            </tr>
+          </thead>
+          <tbody>
+            ${tableRows}
+          </tbody>
+        </table>
+      `;
+    }
+
+    function escapeHtml(s) {
+      return s.replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+    }
+  </script>
+</body>
+</html>
